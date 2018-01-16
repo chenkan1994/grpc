@@ -354,12 +354,11 @@ class Server::SyncRequestThreadManager : public ThreadManager {
 
   void Start() {
     if (!sync_requests_.empty()) {
+      Initialize();  // ThreadManager's Initialize()
       for (auto m = sync_requests_.begin(); m != sync_requests_.end(); m++) {
         (*m)->SetupRequest();
         (*m)->Request(server_->c_server(), server_cq_->cq());
       }
-
-      Initialize();  // ThreadManager's Initialize()
     }
   }
 
@@ -433,8 +432,11 @@ Server::~Server() {
       Shutdown();
     } else if (!started_) {
       // Shutdown the completion queues
-      for (auto it = sync_req_mgrs_.begin(); it != sync_req_mgrs_.end(); it++) {
-        (*it)->Shutdown();
+      for (auto&& mgr : sync_req_mgrs_) {
+        mgr->Shutdown();
+      }
+      for (auto&& mgr : sync_req_mgrs_) {
+        mgr->Wait();
       }
     }
   }

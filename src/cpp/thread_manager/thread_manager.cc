@@ -70,10 +70,9 @@ ThreadManager::ThreadManager(
       thread_joiner_(thread_joiner) {}
 
 ThreadManager::~ThreadManager() {
-  {
-    std::lock_guard<std::mutex> lock(mu_);
-    GPR_ASSERT(num_threads_ == 0);
-  }
+  // Do not hold a lock here since threads should all be Wait'ed
+  // before reaching destructor
+  GPR_ASSERT(num_threads_ == 0);
 
   CleanupCompletedThreads();
 }
@@ -120,11 +119,9 @@ void ThreadManager::CleanupCompletedThreads() {
 }
 
 void ThreadManager::Initialize() {
-  {
-    std::unique_lock<std::mutex> lock(mu_);
-    num_pollers_ = min_pollers_;
-    num_threads_ = min_pollers_;
-  }
+  // When called, there are no threads yet in the thread manager
+  num_pollers_ = min_pollers_;
+  num_threads_ = min_pollers_;
 
   for (int i = 0; i < min_pollers_; i++) {
     // Create a new thread (which ends up calling the MainWorkLoop() function

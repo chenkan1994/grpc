@@ -130,8 +130,8 @@ class ThreadManager {
   int num_pollers_;
 
   // The minimum and maximum number of threads that should be doing polling
-  int min_pollers_;
-  int max_pollers_;
+  const int min_pollers_;
+  const int max_pollers_;
 
   // The total number of threads (includes threads includes the threads that are
   // currently polling i.e num_pollers_)
